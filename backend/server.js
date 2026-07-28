@@ -8,7 +8,7 @@ import connectDB from './src/db/index.js';
 import {} from "./src/config/Cloudinary.config.js"
 import { initSocket } from './src/socket/socket.js';
 import "./src/queue/email.worker.js";
-
+import "./src/config/mailer.js";
 const PORT = process.env.PORT || 8000;
 const httpServer = createServer(app);
 initSocket(httpServer);

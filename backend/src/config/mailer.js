@@ -1,10 +1,14 @@
+import dotenv from 'dotenv'
+dotenv.config({
+    path : './.env'
+});
 import mailer from 'nodemailer';
 
 const transport = mailer.createTransport({
     service:"gmail",
     auth :{
-        user : "",
-        pass: ""
+        user : process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
     }
 })
 

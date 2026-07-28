@@ -306,27 +306,27 @@ const login = asyncHandler(async(req , res) => {
             'EX',
             7 * 24 * 60 * 60 
     )
-    // await emailQueue.add( // adding an email job to the Queue
-    //   'Recent-Login',
-    //   {
-    //     to: email,
-    //     subject: 'Recent Login ',
-    //     body: `
-    //       <div>
-    //         <h2>Hey ${user.userName} we see a new recent login</h2>
-    //         <h1>if this was you ignore this email</h1>
-    //         <p>otherwise go and check</p>
-    //       </div>
-    //     `,
-    //   },
-    //   {
-    //     attempts: 3, 
-    //     backoff: { // control the delays b/w retries 
-    //       type: 'exponential',
-    //       delay: 2000,
-    //     },
-    //   }
-    // );
+    await emailQueue.add( // adding an email job to the Queue
+      'Recent-Login',
+      {
+        to: email,
+        subject: 'Recent Login ',
+        body: `
+          <div>
+            <h2>Hey ${user.userName} we see a new recent login</h2>
+            <h1>if this was you ignore this email</h1>
+            <p>otherwise go and check</p>
+          </div>
+        `,
+      },
+      {
+        attempts: 3, 
+        backoff: { // control the delays b/w retries 
+          type: 'exponential',
+          delay: 2000,
+        },
+      }
+    );
 
     return res.status(200).json(new ApiResponse(200 , 
         {
