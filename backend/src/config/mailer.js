@@ -3,8 +3,8 @@ import mailer from 'nodemailer';
 const transport = mailer.createTransport({
     service:"gmail",
     auth :{
-        user : "alphacenturi6@gmail.com",
-        pass: "hrzlcifhamcqpcni"
+        user : "",
+        pass: ""
     }
 })
 
