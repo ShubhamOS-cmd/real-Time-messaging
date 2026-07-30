@@ -40,7 +40,7 @@ const Messages = () => {
                 console.error("Failed to fetch messages", error)
             }
         }
-
+        // 
         navigate(`/messages/${chat.chatId}`)
     }
 
