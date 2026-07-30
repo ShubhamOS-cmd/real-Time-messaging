@@ -128,7 +128,7 @@ const otpRequest = asyncHandler(async(req , res) => {
         subject: 'OTP Verification',
         body: `
           <div>
-            <h2>Your OTP Code</h2>
+            <h2>Your OTP Code for ${type}</h2>
             <h1>${otp}</h1>
             <p>This OTP expires in 5 minutes.</p>
           </div>
@@ -289,6 +289,7 @@ const login = asyncHandler(async(req , res) => {
     if(!user){
         throw new ApiError(401 , "Invalid Credentials");
     }
+    console.log(password , user.password);
     const isCorrectPassword = await bcrypt.compare(password , user.password);
     if(!isCorrectPassword){
         throw new ApiError(401 , "Invalid Credentials");
@@ -377,7 +378,7 @@ const refresh = asyncHandler(async(req , res) => {
 const changePassword = asyncHandler(async(req,res)=>{
     const parsed = passwordChangeParser.parse(req.body);
     const {email , password} = parsed;
-    const verified = await redis.get(`otp:${email};password-reset:verified`);
+    const verified = await redis.get(`otp:${email}:password-reset:verified`);
     if(!verified){
         throw new ApiError("Not Verified");
     }

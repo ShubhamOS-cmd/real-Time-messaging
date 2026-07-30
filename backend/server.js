@@ -1,7 +1,3 @@
-import dotenv from 'dotenv'
-dotenv.config({
-    path : './.env'
-});
 import {createServer} from "http";
 import app from './app.js';
 import connectDB from './src/db/index.js';
@@ -18,8 +14,8 @@ connectDB()
         console.log(error);
         throw error;
     });
-    httpServer.listen(process.env.PORT || 8000 , () => {
-        console.log(`serve is running on port ${process.env.PORT}`)
+    httpServer.listen(PORT , () => {
+        console.log(`Server is running on port ${PORT}`)
     })
 })
 .catch((err) => {

@@ -32,7 +32,7 @@ const Messages = () => {
         if (!messages[chat.chatId]) {
             try {
                 const res = await getChatHistory({ chatId: chat.chatId })
-                console.log("ChatHistory Api res : ", res.data);
+                
                 if(res){
                     dispatch({ type: "chat/setMessages", payload: { chatId: chat.chatId, messages: res.data } })
                 }

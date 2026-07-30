@@ -1,56 +1,33 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
+
 import { Camera, Eye, EyeOff } from "lucide-react";
 
-import { setUser } from "../store/authSlice.js";
-import { otpRequest, otpVerify, register } from "../services/auth.services.js";
-import { connectSocket } from "../socket/socket.js";
+import {
+  otpRequest,
+  otpVerify,
+  changePassword,
+} from "../services/auth.services.js";
 
-const Register = () => {
-  const dispatch = useDispatch();
+const ForgotPassword = () => {
   const navigate = useNavigate();
 
-  const [step, setStep] = useState(1); // 1=email, 2=otp, 3=details
+  const [step, setStep] = useState(1); // 1=email, 2=otp, 3=new password
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [formData, setFormData] = useState({
-    fullName: "",
-    userName: "",
-    password: "",
-    DOB: "",
+  const [passwords, setPasswords] = useState({
+    newPassword: "",
+    confirmPassword: "",
   });
 
-  // avatar state
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
-
-  const handleAvatarChange = (e) => {
-    const file = e.target.files?.[0];
-    console.log(file);
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
-
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  };
-
-  // Step 1 — request OTP
+  // Step 1 — send OTP
   const handleRequestOTP = async () => {
     try {
       setLoading(true);
-      await otpRequest({ email, type: "register" });
+      await otpRequest({ email, type: "password-reset" });
       toast.success("OTP sent to your email");
       setStep(2);
     } catch (error) {
@@ -68,8 +45,8 @@ const Register = () => {
   const handleVerifyOTP = async () => {
     try {
       setLoading(true);
-      await otpVerify({ email, otp, type: "register" });
-      toast.success("Email verified");
+      await otpVerify({ email, otp, type: "password-reset" });
+      toast.success("OTP verified");
       setStep(3);
     } catch (error) {
       toast.error(
@@ -80,48 +57,45 @@ const Register = () => {
     }
   };
 
-  // Step 3 — register
-  const handleRegister = async () => {
-    if (!avatarFile) {
-      toast.error("Please upload a profile photo");
+  // Step 3 — reset password
+  const handleResetPassword = async () => {
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (passwords.newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
     try {
       setLoading(true);
-
-      // backend expects multipart/form-data (upload.single("avatar"))
-      const res = await register({ ...formData, email, avatar: avatarFile });
-      if (res) {
-        dispatch(setUser(res.data));
-        connectSocket();
-        toast.success("Account created!");
-        navigate("/");
-      }
+      await changePassword({ email, password: passwords.newPassword });
+      toast.success("Password reset successfully");
+      navigate("/login");
     } catch (error) {
       toast.error(
-        error.response?.data?.message || error.message || "Registration failed",
+        error.response?.data?.message || error.message || "Reset failed",
       );
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-[#0A0F1E] flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Background glow — signature element */}
+      {/* Background glow */}
       <div className="absolute w-[500px] h-[500px] rounded-full bg-[#4F8EF7] opacity-[0.07] blur-[120px] pointer-events-none" />
 
-      {/* Glass card */}
       <div className="w-full max-w-md relative z-10">
-        {/* Logo / Brand */}
+        {/* Brand */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#E8EEFF] tracking-tight">
-            wave<span className="text-[#4F8EF7]">.</span>
+            orbit<span className="text-[#4F8EF7]">chat</span>
           </h1>
-          <p className="text-[#8899BB] text-sm mt-1">
-            Chat with anyone, anywhere
-          </p>
+          <p className="text-[#8899BB] text-sm mt-1">Reset your password</p>
         </div>
 
+        {/* Glass card */}
         <div
           className="rounded-2xl p-8"
           style={{
@@ -154,7 +128,7 @@ const Register = () => {
             <span className="ml-2 text-[#8899BB] text-xs">
               {step === 1 && "Enter email"}
               {step === 2 && "Verify OTP"}
-              {step === 3 && "Your details"}
+              {step === 3 && "New password"}
             </span>
           </div>
 
@@ -165,11 +139,15 @@ const Register = () => {
                 <label className="text-[#8899BB] text-sm mb-1.5 block">
                   Email address
                 </label>
+                <p className="text-[#8899BB]/60 text-xs mb-3">
+                  We'll send an OTP to reset your password
+                </p>
                 <input
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleRequestOTP()}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
                 />
               </div>
@@ -190,13 +168,16 @@ const Register = () => {
                 <label className="text-[#8899BB] text-sm mb-1.5 block">
                   Enter OTP
                 </label>
-                <p className="text-[#8899BB] text-xs mb-3">Sent to {email}</p>
+                <p className="text-[#8899BB]/60 text-xs mb-3">
+                  Sent to {email}
+                </p>
                 <input
                   type="text"
                   placeholder="Enter 6-digit OTP"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   maxLength={6}
+                  onKeyDown={(e) => e.key === "Enter" && handleVerifyOTP()}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm tracking-widest"
                 />
               </div>
@@ -216,144 +197,87 @@ const Register = () => {
             </div>
           )}
 
-          {/* Step 3 — Details */}
+          {/* Step 3 — New Password */}
           {step === 3 && (
             <div className="space-y-4">
-              {/* Avatar upload */}
-              <div className="flex flex-col items-center mb-2">
-                <label
-                  htmlFor="avatar-upload"
-                  className="cursor-pointer group relative"
-                >
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden transition-all"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                    }}
-                  >
-                    {avatarPreview ? (
-                      <img
-                        src={avatarPreview}
-                        alt="Avatar preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Camera size={22} className="text-[#8899BB]" />
-                    )}
-                  </div>
-                  <div
-                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center"
-                    style={{ background: "#4F8EF7" }}
-                  >
-                    <Camera size={12} className="text-white" />
-                  </div>
-                </label>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
-                <p className="text-[#8899BB] text-xs mt-2">
-                  {avatarFile ? avatarFile.name : "Upload a profile photo"}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[#8899BB] text-xs mb-1.5 block">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    value={formData.fullName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, fullName: e.target.value })
-                    }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-[#8899BB] text-xs mb-1.5 block">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="john_doe"
-                    value={formData.userName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, userName: e.target.value })
-                    }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
-                  />
-                </div>
-              </div>
               <div>
-                <label className="text-[#8899BB] text-xs mb-1.5 block">
-                  Password
+                <label className="text-[#8899BB] text-sm mb-1.5 block">
+                  New Password
                 </label>
 
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Min 8 characters"
-                    value={formData.password}
+                    value={passwords.newPassword}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        password: e.target.value,
+                      setPasswords({
+                        ...passwords,
+                        newPassword: e.target.value,
                       })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 pr-11 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 pr-12 py-3 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8899BB] hover:text-white transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8899BB] hover:text-white transition-colors"
                   >
                     {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                   </button>
                 </div>
               </div>
               <div>
-                <label className="text-[#8899BB] text-xs mb-1.5 block">
-                  Date of Birth
+                <label className="text-[#8899BB] text-sm mb-1.5 block">
+                  Confirm Password
                 </label>
                 <input
-                  type="date"
-                  value={formData.DOB}
+                  type="password"
+                  placeholder="Repeat your password"
+                  value={passwords.confirmPassword}
                   onChange={(e) =>
-                    setFormData({ ...formData, DOB: e.target.value })
+                    setPasswords({
+                      ...passwords,
+                      confirmPassword: e.target.value,
+                    })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-[#E8EEFF] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
+                  onKeyDown={(e) => e.key === "Enter" && handleResetPassword()}
+                  className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none transition-colors text-sm ${
+                    passwords.confirmPassword &&
+                    passwords.newPassword !== passwords.confirmPassword
+                      ? "border-[#FF4D6D] focus:border-[#FF4D6D]"
+                      : "border-white/10 focus:border-[#4F8EF7]"
+                  }`}
                 />
+                {/* password mismatch hint */}
+                {passwords.confirmPassword &&
+                  passwords.newPassword !== passwords.confirmPassword && (
+                    <p className="text-[#FF4D6D] text-xs mt-1.5">
+                      Passwords do not match
+                    </p>
+                  )}
               </div>
               <button
-                onClick={handleRegister}
+                onClick={handleResetPassword}
                 disabled={
                   loading ||
-                  !formData.fullName ||
-                  !formData.userName ||
-                  !formData.password ||
-                  !formData.DOB ||
-                  !avatarFile
+                  !passwords.newPassword ||
+                  !passwords.confirmPassword ||
+                  passwords.newPassword !== passwords.confirmPassword
                 }
                 className="w-full bg-[#4F8EF7] hover:bg-[#3A7AF0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl transition-colors text-sm"
               >
-                {loading ? "Creating account..." : "Create account"}
+                {loading ? "Resetting..." : "Reset Password"}
               </button>
             </div>
           )}
 
-          {/* Footer link */}
+          {/* Footer */}
           <p className="text-center text-[#8899BB] text-sm mt-6">
-            Already have an account?{" "}
+            Remember your password?{" "}
             <Link to="/login" className="text-[#4F8EF7] hover:underline">
-              Login
+              Sign in
             </Link>
           </p>
         </div>
@@ -362,4 +286,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default ForgotPassword;

@@ -52,11 +52,14 @@ const login = async(data) => {
 const logout = async() => {
     await axiosInstance.post("/api/auth/logout");
 }
-
+const changePassword = async(data) => {
+    const res = axiosInstance.post("/api/auth/change-password" , data);
+}
 export {
     otpRequest , 
     otpVerify , 
     register ,
     login,
-    logout
+    logout,
+    changePassword
 }

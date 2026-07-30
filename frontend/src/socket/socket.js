@@ -5,12 +5,11 @@ import {addNotification} from "../store/notificationSlice.js"
 let socket = null;
 export const connectSocket = () => {
     if(socket) return;
-    console.log("SOCKET CALLED");
     socket  = io(import.meta.env.VITE_SERVER_URL , {
         withCredentials : true
     })
     socket.on("connect" ,() => {
-        console.log("Socket connected" , socket.id);
+        console.log("Socket connected");
     })
     socket.on("connect_error" , (err) => {
         console.log("Socket connection failed " , err.message);
@@ -32,7 +31,6 @@ const registerEvents = () => {
     socket.off("new_message");
     socket.off("message_sent");
     
-    console.log("Register event 2 times ");
     socket.on("req" , (payload , ack)=>{
         store.dispatch(addNotification(payload));
         ack(true); // socket io sends a special ACK packet to the server 
@@ -50,7 +48,6 @@ const registerEvents = () => {
         }))
     })
     socket.on("new_message" , ({chatId , sender , message , createdAt}) => {
-        console.log("new message timer");
         const activeChat = store.getState().chat.activeChat;
         store.dispatch(updateLastMessage({ // update chatlist preview
             chatId,
@@ -69,7 +66,6 @@ const registerEvents = () => {
         }
     })
     socket.on("message_sent", ({ messageId }) => {
-        console.log("Message saved", messageId)
         
     })
     socket.on("error", ({ message }) => {

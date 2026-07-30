@@ -17,18 +17,12 @@ import Chatroom from "./components/Chatroom.jsx"
 import Notifications from "./components/Notifications.jsx"
 import Search from "./components/Search.jsx"
 import Layout from "./components/Layout.jsx"
+import ForgotPassword from './pages/ForgotPassword .jsx'
 const router = createBrowserRouter([
     {
         path: "/",
         element: <App />,
         children: [
-            // default redirect
-            // {
-            //     index: true,
-            //     element: <Navigate to="/messages" />
-            // },
-
-            // Public routes
             {
                 index: true,
                 element: <Navigate to="/welcome" />
@@ -46,6 +40,14 @@ const router = createBrowserRouter([
                 element: (
                     <AuthLayout authentication={false}>
                         <Login />
+                    </AuthLayout>
+                )
+            },
+            {
+                path: "forgot-password",
+                element: (
+                    <AuthLayout authentication={false}>
+                        <ForgotPassword />
                     </AuthLayout>
                 )
             },

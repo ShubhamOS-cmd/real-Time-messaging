@@ -1,3 +1,7 @@
+import dotenv from 'dotenv'
+dotenv.config({
+    path : './.env'
+});
 import express, { urlencoded } from "express"
 import helmet from 'helmet'
 import morgan from 'morgan'
@@ -13,7 +17,7 @@ const app = express();
 app.use(express.json());
 app.use(helmet());
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.client_url,
     credentials : true
 }));
 app.use(morgan('combined' , {

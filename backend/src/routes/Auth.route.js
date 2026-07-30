@@ -22,7 +22,7 @@ router.route('/register').post(
 );
 router.route('/login').post(login);
 router.route('/refresh').post(refresh);
-router.route('/change-password').post(verifyJWT , changePassword);
+router.route('/change-password').post(changePassword);
 router.route('/logout').post(verifyJWT , logout);
 
 export default router;
