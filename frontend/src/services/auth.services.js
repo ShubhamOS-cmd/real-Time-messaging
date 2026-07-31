@@ -52,7 +52,7 @@ const login = async(data) => {
 const logout = async() => {
     await axiosInstance.post("/api/auth/logout");
 }
-const changePassword = async(data) => {
+const changePassword = async(data) => { // for forgot password user have to otp verify 
     const res = axiosInstance.post("/api/auth/change-password" , data);
 }
 export {

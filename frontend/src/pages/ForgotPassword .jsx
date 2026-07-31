@@ -22,8 +22,6 @@ const ForgotPassword = () => {
     newPassword: "",
     confirmPassword: "",
   });
-
-  // Step 1 — send OTP
   const handleRequestOTP = async () => {
     try {
       setLoading(true);
@@ -41,7 +39,6 @@ const ForgotPassword = () => {
     }
   };
 
-  // Step 2 — verify OTP
   const handleVerifyOTP = async () => {
     try {
       setLoading(true);
@@ -57,7 +54,6 @@ const ForgotPassword = () => {
     }
   };
 
-  // Step 3 — reset password
   const handleResetPassword = async () => { // handle reset password 
     if (passwords.newPassword !== passwords.confirmPassword) {
       toast.error("Passwords do not match");
@@ -83,11 +79,11 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-[#0A0F1E] flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Background glow */}
+     
       <div className="absolute w-[500px] h-[500px] rounded-full bg-[#4F8EF7] opacity-[0.07] blur-[120px] pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Brand */}
+       
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#E8EEFF] tracking-tight">
             orbit<span className="text-[#4F8EF7]">chat</span>
@@ -95,7 +91,7 @@ const ForgotPassword = () => {
           <p className="text-[#8899BB] text-sm mt-1">Reset your password</p>
         </div>
 
-        {/* Glass card */}
+        
         <div
           className="rounded-2xl p-8"
           style={{
@@ -105,7 +101,7 @@ const ForgotPassword = () => {
             boxShadow: "0 25px 45px rgba(0,0,0,0.3)",
           }}
         >
-          {/* Step indicator */}
+          
           <div className="flex items-center gap-2 mb-6">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center gap-2">

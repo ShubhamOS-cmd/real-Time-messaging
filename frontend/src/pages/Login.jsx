@@ -8,7 +8,7 @@ import { Camera, Eye, EyeOff } from "lucide-react";
 import { setUser } from "../store/authSlice.js";
 import { login } from "../services/auth.services.js";
 import { connectSocket } from "../socket/socket.js";
-// add handle the forgot password 
+// add handle the forgot password link 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
