@@ -8,7 +8,7 @@ import { Camera, Eye, EyeOff } from "lucide-react";
 import { setUser } from "../store/authSlice.js";
 import { login } from "../services/auth.services.js";
 import { connectSocket } from "../socket/socket.js";
-
+// add handle the forgot password 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -157,7 +157,7 @@ const Login = () => {
             <Link
               to="/forgot-password"
               className="text-[#4F8EF7] hover:underline"
-            >
+            > 
               Forgot Password
             </Link>
           </p>

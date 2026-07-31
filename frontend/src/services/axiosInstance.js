@@ -23,9 +23,9 @@ const axiosInstance = axios.create({
 
 // 
 axiosInstance.interceptors.response.use(
-    // success - just return
+    // success - just return no loop 
     (response) => response,
-    // error handler
+    // error handler if 401 retry once 
     async(error) => {
         const originalRequest = error.config;
         const errorCode = error.response?.data?.code;

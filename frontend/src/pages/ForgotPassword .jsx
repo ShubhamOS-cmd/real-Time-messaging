@@ -58,7 +58,7 @@ const ForgotPassword = () => {
   };
 
   // Step 3 — reset password
-  const handleResetPassword = async () => {
+  const handleResetPassword = async () => { // handle reset password 
     if (passwords.newPassword !== passwords.confirmPassword) {
       toast.error("Passwords do not match");
       return;

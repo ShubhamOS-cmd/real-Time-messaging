@@ -61,5 +61,5 @@ export {
     register ,
     login,
     logout,
-    changePassword
+    changePassword // for forgot password 
 }
