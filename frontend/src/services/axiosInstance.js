@@ -16,7 +16,7 @@ import {clearNotification} from "../store/notificationSlice.js"
 import {disconnectSocket} from "../socket/socket.js"
 
 const axiosInstance = axios.create({
-    baseURL : import.meta.env.VITE_SERVER_URL || "http://localhost:8000",
+    baseURL : import.meta.env.VITE_SERVER_URL,
     withCredentials : true,
 }) // send cookies with automatically with every request
 

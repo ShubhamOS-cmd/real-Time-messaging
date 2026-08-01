@@ -18,7 +18,7 @@ const Search = () => {
             setResult(null);
             const res = await searchTheUser({ userName: query.trim() })
             if(res){
-                console.log(res);
+                //console.log(res);
                 setResult(res.data)
             }
         } catch (error) {
@@ -111,14 +111,14 @@ const Search = () => {
                         }}>
                         <div className="flex items-center gap-4">
                             <img
-                                src={result?.avatar || "https://picsum.photos/id/237/100/100"}
-                                alt={result?.fullName}
+                                src={result?.user?.avatar || "https://picsum.photos/id/237/100/100"}
+                                alt={result?.user?.fullName}
                                 className="w-14 h-14 rounded-2xl object-cover"
                                 style={{ border: "1px solid rgba(255,255,255,0.1)" }}
                             />
                             <div className="flex-1">
-                                <p className="text-[#E8EEFF] font-semibold">{result?.fullName}</p>
-                                <p className="text-[#8899BB] text-sm">@{result?.userName}</p>
+                                <p className="text-[#E8EEFF] font-semibold">{result?.user?.fullName}</p>
+                                <p className="text-[#8899BB] text-sm">@{result?.user?.userName}</p>
                             </div>
 
                             {/* Action button based on status */}
