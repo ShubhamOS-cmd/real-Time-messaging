@@ -220,7 +220,7 @@ const register = asyncHandler(async(req , res) => {
         email,
         password : hashedPassword,
         DOB,
-        avatar : avatar.url,
+        avatar : avatar.secure_url,
     })
     const createdUser = await User.findById(user._id).select("-password");
     if(!createdUser){
