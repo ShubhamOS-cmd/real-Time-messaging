@@ -25,3 +25,11 @@ export const sendMail = async (to,subject,body) => {
 
 console.log("GMAIL_USER present:", !!process.env.GMAIL_USER);
 console.log("GMAIL_APP_PASSWORD present:", !!process.env.GMAIL_APP_PASSWORD);
+
+transport.verify((err, success) => {
+    if (err) {
+        console.error("Transporter verify failed:", err);
+    } else {
+        console.log("Transporter is ready to send emails");
+    }
+});
