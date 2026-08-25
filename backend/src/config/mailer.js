@@ -21,3 +21,7 @@ export const sendMail = async (to,subject,body) => {
     html: body  // or `text:` for plain text
 });
 }
+
+
+console.log("GMAIL_USER present:", !!process.env.GMAIL_USER);
+console.log("GMAIL_APP_PASSWORD present:", !!process.env.GMAIL_APP_PASSWORD);
