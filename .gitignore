@@ -77,7 +77,6 @@ coverage/
 # Temporary files
 # =========================
 tmp/
-temp/
 
 # =========================
 # Vercel / Render
