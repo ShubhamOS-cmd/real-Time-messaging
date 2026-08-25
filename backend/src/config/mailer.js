@@ -13,6 +13,7 @@ const transport = mailer.createTransport({
 })
 
 export const sendMail = async (to,subject,body) => {
+    console.log("Mail is going to send");
     await transport.sendMail({
     from: process.env.GMAIL_USER,
     to,

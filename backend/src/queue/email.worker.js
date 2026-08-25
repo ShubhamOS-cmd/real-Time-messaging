@@ -4,7 +4,7 @@ import {sendMail} from "../config/mailer.js";
 
 
 const emailWorker = new Worker("emails" , async(job)=>{
-    console.log("I am inside the work");
+    console.log("I am inside the work" , job.id , job.data);
     const {to , subject , body} = job.data;
     await sendMail(to , subject , body);
 } , {
