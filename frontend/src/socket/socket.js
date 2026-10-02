@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import toast from "react-hot-toast";
 import {store} from "../store/store.js";
 import {setChatRooms , setActiveChat , setMessages , addMessage , updateLastMessage , clearChatRooms , removeChatRoom , addChatRooms} from "../store/chatSlice.js";
 import {addNotification} from "../store/notificationSlice.js"
@@ -30,6 +31,7 @@ const registerEvents = () => {
     socket.off("acc");
     socket.off("new_message");
     socket.off("message_sent");
+    socket.off("message_failed");
     
     socket.on("req" , (payload , ack)=>{
         store.dispatch(addNotification(payload));
@@ -65,9 +67,13 @@ const registerEvents = () => {
             }}))
         }
     })
-    socket.on("message_sent", ({ messageId }) => {
-        
+    socket.on("message_sent", () => {
+        toast.success("Message sent");
     })
+    const handleMessageFailed = ({ error } = {}) => {
+        toast.error(error || "Message could not be sent. Please try again.");
+    };
+    socket.on("message_falied", handleMessageFailed);
     socket.on("error", ({ message }) => {
         console.error("Socket error", message)
     })

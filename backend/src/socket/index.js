@@ -28,22 +28,23 @@ export const onConnection = async(socket) => {
     })
 }
 const onSendMessage = async(socket , message , userId , roomId) => {
-    const chatRoom = await ChatRoom.findById(roomId);
-    const newMessage = await Message.create({
-        chatId : chatRoom._id,
+    try {
+        // check is the socket is really a member of that room 
+        // socket has functionality to store that room which have they joined instead of using a DB we can simply use this 
+        if(!socket.rooms.has(roomId)){
+            return socket.emit("message_failed" , {error:"You do not have joined this room "});
+        }
+        const t0 = performance.now();
+        const newMessage = await Message.create({
+        chatId : roomId,
         sender : userId,
         message : {
             type : "text",
             content : message.content
         }
-    })
-    await ChatRoom.findByIdAndUpdate(chatRoom._id , {
-        lastMessage : {
-            content : message.content,
-            sender : userId,
-            timestamp : new Date()
-        }
-    })
+        })
+        console.log("Create: " , performance.now()-t0);
+    // after message creating broadcast immediately 
     const io = getIO();
     io.to(roomId).emit('new_message' , {
         chatId : roomId,
@@ -52,6 +53,18 @@ const onSendMessage = async(socket , message , userId , roomId) => {
         createdAt : newMessage.createdAt
     });
     socket.emit("message_sent", { messageId: newMessage._id })
+    console.log("Total to emit : ", performance.now() - t0);
+    await ChatRoom.findByIdAndUpdate(roomId , {
+        lastMessage : {
+            content : message.content,
+            sender : userId,
+            timestamp : new Date()
+        }
+    })
+    } catch (error) {
+      console.log("OnSending failed " , error);
+      socket.emit("message_falied" , {error: "Could not send message"})
+    }
 }
 const deliverPendingNotifications = async (socket, userId) => {
     const pending = await Notification.find({ receiver: userId }).sort({ createdAt: 1 }) // database retrieval fetch all pending notification 
