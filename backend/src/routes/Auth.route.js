@@ -20,7 +20,13 @@ router.route('/register').post(
     upload.single("avatar"),
     register
 );
-router.route('/login').post(login);
+router.route('/login').post((req , res , next) => {
+    req.startTime = Date.now();
+    res.on('finish' , () => {
+        console.log(`Login took ${Date.now() - req.startTime}ms`);
+    });
+    next();
+} , login);
 router.route('/refresh').post(refresh);
 router.route('/change-password').post(changePassword);
 router.route('/logout').post(verifyJWT , logout);

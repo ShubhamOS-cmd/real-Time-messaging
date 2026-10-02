@@ -129,7 +129,7 @@ const getMyChatRooms = asyncHandler(async(req , res)=>{
     const allChatRooms = await ChatRoom.find({
         members : {$in : [userId]}
     })
-    .populate("members" , "name userName avatar") // populate both members 
+    .populate("members" , "fullName userName avatar") // populate both members 
     .sort({updateAt : -1});
     // for each chat expose only other member info 
     const formattedChat = allChatRooms.map((chat) => {
@@ -140,7 +140,7 @@ const getMyChatRooms = asyncHandler(async(req , res)=>{
             chatId : chat._id,
             otherMember,
             lastMessage: chat.lastMessage,
-            updatedAt : chat.updateAt
+            updatedAt : chat.updatedAt
         }
     })
     return res.status(200).json(new ApiResponse(200 , formattedChat , "All chats are fetched"));

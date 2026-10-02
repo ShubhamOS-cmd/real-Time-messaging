@@ -23,7 +23,7 @@ const chatRoomSchema = new Schema({
             },
     },
 }, {timestamps : true});
-chatRoomSchema.index({members : true});
+chatRoomSchema.index({members : 1});
 const ChatRoom = mongoose.model("ChatRoom", chatRoomSchema);
 export default ChatRoom;
 

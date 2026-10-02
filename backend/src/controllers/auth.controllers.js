@@ -289,7 +289,6 @@ const login = asyncHandler(async(req , res) => {
     if(!user){
         throw new ApiError(401 , "Invalid Credentials");
     }
-    console.log(password , user.password);
     const isCorrectPassword = await bcrypt.compare(password , user.password);
     if(!isCorrectPassword){
         throw new ApiError(401 , "Invalid Credentials");
