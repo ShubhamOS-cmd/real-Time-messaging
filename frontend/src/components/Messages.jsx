@@ -1,116 +1,262 @@
-import { useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { useNavigate } from "react-router"
-import { MessageSquare } from "lucide-react"
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import {
+  MessageSquare,
+  Search,
+} from "lucide-react";
 
-import { setChatRooms, setActiveChat } from "../store/chatSlice.js"
-import { getChatRooms, getChatHistory } from "../services/chat.services.js"
+import {
+  setChatRooms,
+  setActiveChat,
+} from "../store/chatSlice.js";
+
+import {
+  getChatRooms,
+  getChatHistory,
+} from "../services/chat.services.js";
 
 const Messages = () => {
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
-    const chatList = useSelector(state => state.chat.chatRooms)
-    const messages = useSelector(state => state.chat.messages)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchChats = async () => {
-            try {
-                const res = await getChatRooms();
-                if(res){
-                    dispatch(setChatRooms(res.data))
-                }
-            } catch (error) {
-                console.error("Failed to fetch chats", error)
-            }
+  const chatList = useSelector(
+    (state) => state.chat.chatRooms
+  );
+
+  const messages = useSelector(
+    (state) => state.chat.messages
+  );
+
+  // -----------------------------
+  // Fetch chat rooms
+  // -----------------------------
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const res = await getChatRooms();
+
+        if (res) {
+          dispatch(setChatRooms(res.data));
         }
-        fetchChats();
-    }, [])
+      } catch (error) {
+        console.error(
+          "Failed to fetch chats",
+          error
+        );
+      }
+    };
 
-    const handleOpenChat = async (chat) => {
-        dispatch(setActiveChat(chat.chatId))
+    fetchChats();
+  }, [dispatch]);
 
-        if (!messages[chat.chatId]) {
-            try {
-                const res = await getChatHistory({ chatId: chat.chatId })
-                
-                if(res){
-                    dispatch({ type: "chat/setMessages", payload: { chatId: chat.chatId, messages: res.data } })
-                }
-            } catch (error) {
-                console.error("Failed to fetch messages", error)
-            }
+  // -----------------------------
+  // Open chat
+  // -----------------------------
+
+  const handleOpenChat = async (chat) => {
+    dispatch(setActiveChat(chat.chatId));
+
+    // Fetch history only if it isn't
+    // already available in Redux.
+    if (!messages[chat.chatId]) {
+      try {
+        const res = await getChatHistory({
+          chatId: chat.chatId,
+        });
+
+        if (res) {
+          dispatch({
+            type: "chat/setMessages",
+            payload: {
+              chatId: chat.chatId,
+              messages: res.data,
+            },
+          });
         }
-        // 
-        navigate(`/messages/${chat.chatId}`)
+      } catch (error) {
+        console.error(
+          "Failed to fetch messages",
+          error
+        );
+      }
     }
 
-    const formatTime = (timestamp) => {
-        if (!timestamp) return ""
-        const date = new Date(timestamp)
-        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    }
+    navigate(`/messages/${chat.chatId}`);
+  };
 
-    return (
-        <div className="h-full flex flex-col" style={{ background: "#0A0F1E" }}>
+  // -----------------------------
+  // Format timestamp
+  // -----------------------------
 
-            {/* Header */}
-            <div className="px-5 py-4 shrink-0"
-                style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <h2 className="text-[#E8EEFF] font-semibold text-lg">Messages</h2>
-                <p className="text-[#8899BB] text-xs mt-0.5">{chatList.length} conversations</p>
-            </div>
+  const formatTime = (timestamp) => {
+    if (!timestamp) return "";
 
-            {/* Chat list */}
-            <div className="flex-1 overflow-y-auto">
-                {chatList.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full gap-3">
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                            style={{ background: "rgba(79,142,247,0.1)", border: "1px solid rgba(79,142,247,0.15)" }}>
-                            <MessageSquare size={24} className="text-[#4F8EF7]" />
-                        </div>
-                        <p className="text-[#8899BB] text-sm">No conversations yet</p>
-                        <p className="text-[#8899BB]/60 text-xs">Search for someone to start chatting</p>
-                    </div>
-                ) : (
-                    chatList.map((chat) => (
-                        <button
-                            key={chat.chatId}
-                            onClick={() => handleOpenChat(chat)}
-                            className="w-full px-4 py-3.5 flex items-center gap-3 transition-all duration-150 text-left"
-                            style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-                            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                        >
-                            {/* Avatar */}
-                            <div className="relative shrink-0">
-                                <img
-                                    src={chat.otherMember?.avatar || "https://picsum.photos/id/237/100/100"}
-                                    alt={chat.otherMember?.fullName}
-                                    className="w-11 h-11 rounded-xl object-cover"
-                                    style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-                                />
-                            </div>
+    const date = new Date(timestamp);
 
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-[#E8EEFF] text-sm font-medium truncate">
-                                        {chat.otherMember?.fullName}
-                                    </p>
-                                    <span className="text-[#8899BB] text-[11px] shrink-0 ml-2">
-                                        {formatTime(chat.lastMessage?.timestamp)}
-                                    </span>
-                                </div>
-                                <p className="text-[#8899BB] text-xs truncate mt-0.5">
-                                    {chat.lastMessage?.content || "Start a conversation"}
-                                </p>
-                            </div>
-                        </button>
-                    ))
-                )}
-            </div>
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  return (
+    <div className="orbit-page orbit-messages-page">
+      {/* ================= HEADER ================= */}
+
+      <div className="orbit-page-header">
+        <div>
+          <h1 className="text-orbit-text">
+            Messages
+          </h1>
+
+          <p className="text-orbit-muted">
+            {chatList.length}{" "}
+            {chatList.length === 1
+              ? "conversation"
+              : "conversations"}
+          </p>
         </div>
-    )
-}
 
-export default Messages
+        <button
+          className="
+            orbit-icon-button
+            text-orbit-primary
+            hover:bg-orbit-primary/10
+          "
+          type="button"
+          onClick={() => navigate("/search")}
+          aria-label="Find people"
+          title="Find people"
+        >
+          <Search
+            size={18}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+
+      {/* ================= CONVERSATIONS ================= */}
+
+      <div className="orbit-conversation-list">
+        {chatList.length === 0 ? (
+          <div
+            className="
+              orbit-empty-state
+              border
+              border-orbit-line
+              bg-orbit-surface
+              shadow-[var(--orbit-shadow-sm)]
+            "
+          >
+            <div
+              className="
+                flex
+                h-12
+                w-12
+                items-center
+                justify-center
+                rounded-full
+                bg-orbit-bg
+                text-orbit-primary
+              "
+            >
+              <MessageSquare
+                size={25}
+                aria-hidden="true"
+              />
+            </div>
+
+            <h2 className="text-orbit-text">
+              No conversations yet
+            </h2>
+
+            <p className="text-orbit-muted">
+              Find someone to start a conversation.
+            </p>
+
+            <button
+              className="orbit-button"
+              type="button"
+              onClick={() => navigate("/search")}
+            >
+              <Search size={16} />
+              Find people
+            </button>
+          </div>
+        ) : (
+          chatList.map((chat) => (
+            <button
+              key={chat.chatId}
+              onClick={() =>
+                handleOpenChat(chat)
+              }
+              className="
+                orbit-conversation
+                border
+                border-orbit-line
+                bg-orbit-surface
+                hover:border-orbit-primary
+                hover:shadow-[var(--orbit-shadow-sm)]
+              "
+              type="button"
+            >
+              {/* Avatar */}
+
+              {chat.otherMember?.avatar ? (
+                <img
+                  src={chat.otherMember.avatar}
+                  alt=""
+                  className="
+                    orbit-avatar
+                    orbit-conversation-avatar
+                  "
+                />
+              ) : (
+                <div
+                  className="
+                    orbit-avatar
+                    orbit-conversation-avatar
+                    bg-orbit-bg
+                    text-orbit-primary
+                  "
+                  aria-hidden="true"
+                >
+                  {chat.otherMember?.fullName?.slice(
+                    0,
+                    1
+                  ) || "?"}
+                </div>
+              )}
+
+              {/* Conversation */}
+
+              <div className="orbit-conversation-copy">
+                <div className="orbit-conversation-title">
+                  <strong className="text-orbit-text">
+                    {chat.otherMember?.fullName ||
+                      "Conversation"}
+                  </strong>
+
+                  <time className="text-orbit-muted">
+                    {formatTime(
+                      chat.lastMessage?.timestamp
+                    )}
+                  </time>
+                </div>
+
+                <p className="text-orbit-muted">
+                  {chat.lastMessage?.content ||
+                    "Start a conversation"}
+                </p>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Messages;

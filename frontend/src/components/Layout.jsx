@@ -3,9 +3,9 @@ import Sidebar from "./Sidebar.jsx"
 
 const Layout = () => {
     return (
-        <div className="flex h-screen bg-[#0A0F1E] overflow-hidden">
+        <div className="orbit-shell">
             <Sidebar />
-            <main className="flex-1 overflow-hidden">
+            <main className="orbit-main">
                 <Outlet />
             </main>
         </div>

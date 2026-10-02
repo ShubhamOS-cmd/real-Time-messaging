@@ -2,19 +2,21 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
-
-import { Camera, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, MessagesSquare } from "lucide-react";
 
 import { setUser } from "../store/authSlice.js";
 import { login } from "../services/auth.services.js";
 import { connectSocket } from "../socket/socket.js";
-// add handle the forgot password link 
+import OrbitAuthLayout from "../components/OrbitAuthLayout.jsx";
+
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
-  const [err, seterr] = useState("");
+  const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     userName: "",
@@ -24,151 +26,267 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       setLoading(true);
+      setErr("");
+
       const res = await login(formData);
+
       if (res) {
-        console.log(res);
         dispatch(setUser(res.data));
         connectSocket();
+
         toast.success("Welcome back!");
         navigate("/");
       }
     } catch (error) {
       const message = error.message || "Login failed";
+
+      setErr(message);
       toast.error(message);
-      seterr(message);
     } finally {
       setLoading(false);
     }
   };
 
-  // const handleKeyDown = (e) => {
-  //     if (e.key === "Enter") handleLogin()
-  // }
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !loading) {
+      handleLogin();
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute w-[500px] h-[500px] rounded-full bg-[#4F8EF7] opacity-[0.07] blur-[120px] pointer-events-none" />
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#E8EEFF] tracking-tight">
-            wave<span className="text-[#4F8EF7]">.</span>
-          </h1>
-          <p className="text-[#8899BB] text-sm mt-1">Welcome back</p>
-        </div>
-
-        {/* Glass card */}
-        <div
-          className="rounded-2xl p-8"
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow: "0 25px 45px rgba(0,0,0,0.3)",
-          }}
-        >
-          <h2 className="text-[#E8EEFF] font-semibold text-lg mb-6">Sign in</h2>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-[#8899BB] text-sm mb-1.5 block">
-                Email address
-              </label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={(e) => {
-                  seterr("");
-                  setFormData({ ...formData, email: e.target.value });
-                }}
-                // onKeyDown={handleKeyDown}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-[#8899BB] text-sm mb-1.5 block">
-                UserName
-              </label>
-              <input
-                type="text"
-                placeholder="Enter your UserName"
-                value={formData.userName}
-                onChange={(e) => {
-                  seterr("");
-                  setFormData({ ...formData, userName: e.target.value });
-                }}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-[#8899BB] text-xs mb-1.5 block">
-                Password
-              </label>
-
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Min 8 characters"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      password: e.target.value,
-                    })
-                  }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 pr-11 text-[#E8EEFF] placeholder-[#8899BB] focus:outline-none focus:border-[#4F8EF7] transition-colors text-sm"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8899BB] hover:text-white transition-colors"
-                >
-                  {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={handleLogin}
-              disabled={
-                loading ||
-                !formData.email ||
-                !formData.password ||
-                !formData.userName
-              }
-              className="w-full bg-[#4F8EF7] hover:bg-[#3A7AF0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl transition-colors text-sm mt-2"
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </div>
-
-          <p className="text-center text-[#8899BB] text-sm mt-6">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-[#4F8EF7] hover:underline">
-              Create one
-            </Link>
-          </p>
-          <p className="text-center text-[#8899BB] text-sm mt-6">
-            Forgot Passoword?{" "}
-            <Link
-              to="/forgot-password"
-              className="text-[#4F8EF7] hover:underline"
-            > 
-              Forgot Password
-            </Link>
-          </p>
-        </div>
+    <OrbitAuthLayout>
+      <div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#e3efe8] text-[#285b4a]">
+        <MessagesSquare size={22} strokeWidth={1.8} />
       </div>
+
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold text-orbit-text">
+          Sign in
+        </h2>
+
+        <p className="text-sm text-orbit-muted mt-2">
+          Welcome back to ORBIT.
+        </p>
+      </div>
+
+      {/* Error */}
+
       {err && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-          <p className="text-red-400 text-sm text-center">{err}</p>
+        <div
+          className="
+            mb-5
+            rounded-xl
+            border border-orbit-danger/20
+            bg-orbit-danger/10
+            px-4 py-3
+          "
+        >
+          <p className="text-sm text-orbit-danger">
+            {err}
+          </p>
         </div>
       )}
-    </div>
+
+      <div className="space-y-5">
+
+        {/* Email */}
+
+        <div>
+          <label className="block text-sm text-orbit-muted mb-2">
+            Email address
+          </label>
+
+          <input
+            type="email"
+            placeholder="you@example.com"
+            value={formData.email}
+            onChange={(e) => {
+              setErr("");
+
+              setFormData({
+                ...formData,
+                email: e.target.value,
+              });
+            }}
+            onKeyDown={handleKeyDown}
+            className="
+              w-full h-12
+              rounded-xl
+              bg-orbit-surface
+              px-4
+              text-sm text-orbit-text
+              placeholder:text-orbit-muted
+              border border-orbit-line
+              outline-none
+              transition-all
+              focus:border-orbit-primary
+              focus:ring-2
+              focus:ring-orbit-primary/10
+            "
+          />
+        </div>
+
+        {/* Username */}
+
+        <div>
+          <label className="block text-sm text-orbit-muted mb-2">
+            Username
+          </label>
+
+          <input
+            type="text"
+            placeholder="Enter your username"
+            value={formData.userName}
+            onChange={(e) => {
+              setErr("");
+
+              setFormData({
+                ...formData,
+                userName: e.target.value,
+              });
+            }}
+            onKeyDown={handleKeyDown}
+            className="
+              w-full h-12
+              rounded-xl
+              bg-orbit-surface
+              px-4
+              text-sm text-orbit-text
+              placeholder:text-orbit-muted
+              border border-orbit-line
+              outline-none
+              transition-all
+              focus:border-orbit-primary
+              focus:ring-2
+              focus:ring-orbit-primary/10
+            "
+          />
+        </div>
+
+        {/* Password */}
+
+        <div>
+          <label className="block text-sm text-orbit-muted mb-2">
+            Password
+          </label>
+
+          <div className="relative">
+
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Min 8 characters"
+              value={formData.password}
+              onChange={(e) => {
+                setErr("");
+
+                setFormData({
+                  ...formData,
+                  password: e.target.value,
+                });
+              }}
+              onKeyDown={handleKeyDown}
+              className="
+                w-full h-12
+                rounded-xl
+                bg-orbit-surface
+                px-4 pr-12
+                text-sm text-orbit-text
+                placeholder:text-orbit-muted
+                border border-orbit-line
+                outline-none
+                transition-all
+                focus:border-orbit-primary
+                focus:ring-2
+                focus:ring-orbit-primary/10
+              "
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword((prev) => !prev)
+              }
+              className="
+                absolute right-4 top-1/2
+                -translate-y-1/2
+                text-orbit-muted
+                hover:text-orbit-primary
+                transition-colors
+              "
+            >
+              {showPassword ? (
+                <EyeOff size={18} />
+              ) : (
+                <Eye size={18} />
+              )}
+            </button>
+
+          </div>
+        </div>
+
+        {/* Forgot password */}
+
+        <div className="flex justify-end -mt-1">
+          <Link
+            to="/forgot-password"
+            className="
+              text-sm
+              text-orbit-muted
+              hover:text-orbit-primary
+              transition-colors
+            "
+          >
+            Forgot password?
+          </Link>
+        </div>
+
+        {/* Button */}
+
+        <button
+          onClick={handleLogin}
+          disabled={
+            loading ||
+            !formData.email ||
+            !formData.password ||
+            !formData.userName
+          }
+          className="
+            w-full h-12
+            rounded-full
+            bg-orbit-primary
+            hover:bg-orbit-primary-hover
+            active:scale-[0.99]
+            disabled:opacity-50
+            disabled:cursor-not-allowed
+            text-white
+            font-semibold
+            text-sm
+            transition-all
+          "
+        >
+          <span>{loading ? "Signing in..." : "Sign in"}</span>
+          {!loading && <ArrowRight size={17} aria-hidden="true" />}
+        </button>
+      </div>
+
+      {/* Register */}
+
+      <p className="text-center text-sm text-orbit-muted mt-8">
+        Don't have an account?{" "}
+
+        <Link
+          to="/register"
+          className="
+            text-orbit-primary
+            hover:text-orbit-primary-hover
+            font-medium
+            transition-colors
+          "
+        >
+          Create one
+        </Link>
+      </p>
+    </OrbitAuthLayout>
   );
 };
 

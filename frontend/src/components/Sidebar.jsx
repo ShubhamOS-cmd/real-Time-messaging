@@ -1,140 +1,227 @@
-import { useNavigate, useLocation } from "react-router"
-import { useDispatch, useSelector } from "react-redux"
-import { Search, Bell, MessageSquare, User, LogOut } from "lucide-react"
-import toast from "react-hot-toast"
+import { useNavigate, useLocation } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  Search,
+  Bell,
+  MessageSquare,
+  User,
+  LogOut,
+} from "lucide-react";
+import ThemeToggle from "./ThemeToggle.jsx";
+import toast from "react-hot-toast";
 
-import { clearUser } from "../store/authSlice.js"
-import { clearChatRooms } from "../store/chatSlice.js"
-import { clearNotification } from "../store/notificationSlice.js"
-import { logout } from "../services/auth.services.js"
-import { disconnectSocket } from "../socket/socket.js"
+import { clearUser } from "../store/authSlice.js";
+import { clearChatRooms } from "../store/chatSlice.js";
+import { clearNotification } from "../store/notificationSlice.js";
+import { logout } from "../services/auth.services.js";
+import { disconnectSocket } from "../socket/socket.js";
 
 const Sidebar = () => {
-    const navigate = useNavigate()
-    const location = useLocation()
-    const dispatch = useDispatch()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
-    const notificationCount = useSelector(state => state.notification.notifications.length)
-    const user = useSelector(state => state.auth.user)
+  const notificationCount = useSelector(
+    (state) => state.notification.notifications.length
+  );
 
-    const isActive = (path) => location.pathname.startsWith(path)
+  const user = useSelector((state) => state.auth.user);
 
-    const handleLogout = async () => {
-        try {
-            await logout()
-            disconnectSocket()
-            dispatch(clearUser())
-            dispatch(clearChatRooms())
-            dispatch(clearNotification())
-            toast.success("Logged out")
-            navigate("/welcome")
-        } catch (error) {
-            toast.error("Logout failed")
-        }
+  const isActive = (path) =>
+    location.pathname.startsWith(path);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+
+      disconnectSocket();
+
+      dispatch(clearUser());
+      dispatch(clearChatRooms());
+      dispatch(clearNotification());
+
+      toast.success("Logged out");
+
+      navigate("/login");
+    } catch {
+      toast.error("Logout failed");
     }
+  };
 
-    const topNavItems = [
-        { icon: MessageSquare, path: "/messages", label: "Messages" },
-        { icon: Search, path: "/search", label: "Search" },
-        { icon: Bell, path: "/notifications", label: "Notifications", badge: notificationCount },
-    ]
+  const navItems = [
+    {
+      icon: MessageSquare,
+      path: "/messages",
+      label: "Messages",
+    },
+    {
+      icon: Search,
+      path: "/search",
+      label: "Find people",
+    },
+    {
+      icon: Bell,
+      path: "/notifications",
+      label: "Requests",
+      badge: notificationCount,
+    },
+    {
+      icon: User,
+      path: "/profile",
+      label: "Profile",
+    },
+  ];
 
-    const bottomNavItems = [
-        { icon: User, path: "/profile", label: "Profile" },
-    ]
-
-    const IconButton = ({ icon: Icon, path, label, badge }) => {
-        const active = isActive(path)
-        return (
-            <div className="relative group">
-                <button
-                    onClick={() => navigate(path)}
-                    className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 relative"
-                    style={{
-                        background: active ? "rgba(79,142,247,0.15)" : "transparent",
-                        border: active ? "1px solid rgba(79,142,247,0.2)" : "1px solid transparent"
-                    }}
-                >
-                    <Icon
-                        size={20}
-                        className="transition-colors duration-200"
-                        style={{ color: active ? "#4F8EF7" : "#8899BB" }}
-                        fill={active ? "rgba(79,142,247,0.3)" : "none"}
-                    />
-                    {/* Badge */}
-                    {badge > 0 && (
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#4F8EF7] rounded-full text-white text-[9px] flex items-center justify-center font-bold">
-                            {badge > 9 ? "9+" : badge}
-                        </span>
-                    )}
-                </button>
-
-                {/* Tooltip */}
-                <div className="absolute left-14 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg text-xs text-[#E8EEFF] font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50"
-                    style={{ background: "rgba(13,21,38,0.95)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                    {label}
-                </div>
-            </div>
-        )
-    }
+  const NavLink = ({
+    icon: Icon,
+    path,
+    label,
+    badge,
+  }) => {
+    const active = isActive(path);
 
     return (
-        <aside
-            className="w-16 h-screen flex flex-col items-center py-4 gap-1 shrink-0"
-            style={{
-                background: "rgba(255,255,255,0.02)",
-                borderRight: "1px solid rgba(255,255,255,0.06)"
-            }}
+      <button
+        type="button"
+        onClick={() => navigate(path)}
+        className={`
+          orbit-nav-link
+          ${active ? "is-active" : ""}
+        `}
+        aria-current={active ? "page" : undefined}
+        aria-label={label}
+        title={label}
+      >
+        <Icon
+          size={19}
+          strokeWidth={active ? 2.2 : 1.9}
+          aria-hidden="true"
+        />
+
+        <span>{label}</span>
+
+        {badge > 0 && (
+          <span className="orbit-nav-badge">
+            {badge > 9 ? "9+" : badge}
+          </span>
+        )}
+      </button>
+    );
+  };
+
+  return (
+    <aside
+      className="orbit-sidebar"
+      aria-label="Main navigation"
+    >
+      {/* ================= BRAND ================= */}
+
+      <button
+        type="button"
+        className="
+          orbit-brand
+          border-0
+          bg-transparent
+          cursor-pointer
+        "
+        onClick={() => navigate("/messages")}
+        aria-label="Orbit home"
+      >
+        <span
+          className="orbit-mark"
+          aria-hidden="true"
+        />
+
+        <span>ORBIT</span>
+      </button>
+
+      {/* ================= NAVIGATION ================= */}
+
+      <nav
+        className="orbit-nav"
+        aria-label="Primary"
+      >
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            {...item}
+          />
+        ))}
+
+        <ThemeToggle className="orbit-nav-link" />
+
+        {/* Mobile logout */}
+
+        <button
+          className="
+            orbit-nav-link
+            orbit-mobile-logout
+          "
+          type="button"
+          onClick={handleLogout}
+          aria-label="Log out"
+          title="Log out"
         >
-            {/* Logo */}
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: "rgba(79,142,247,0.12)", border: "1px solid rgba(79,142,247,0.2)" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="#4F8EF7" strokeWidth="1.5" />
-                    <circle cx="12" cy="12" r="3.5" fill="#4F8EF7" />
-                    <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#4F8EF7" strokeWidth="1.5" opacity="0.4" />
-                </svg>
-            </div>
+          <LogOut
+            size={19}
+            aria-hidden="true"
+          />
 
-            {/* Divider */}
-            <div className="w-6 h-px bg-white/10 mb-2" />
+          <span>Log out</span>
+        </button>
+      </nav>
 
-            {/* Top nav */}
-            <div className="flex flex-col items-center gap-1.5 flex-1">
-                {topNavItems.map((item) => (
-                    <IconButton key={item.path} {...item} />
-                ))}
-            </div>
+      {/* ================= SPACER ================= */}
 
-            {/* Bottom nav */}
-            <div className="flex flex-col items-center gap-1.5">
-                {/* Avatar */}
-                <button onClick={() => navigate("/profile")} className="relative group">
-                    <img
-                        src={user?.avatar || "https://picsum.photos/id/237/100/100"}
-                        alt={user?.fullName}
-                        className="w-9 h-9 rounded-xl object-cover"
-                        style={{ border: isActive("/profile") ? "1.5px solid #4F8EF7" : "1.5px solid rgba(255,255,255,0.1)" }}
-                    />
-                </button>
+      <div className="orbit-sidebar-spacer" />
 
-                {/* Logout */}
-                <div className="relative group">
-                    <button
-                        onClick={handleLogout}
-                        className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 hover:bg-[#FF4D6D]/10"
-                        style={{ border: "1px solid transparent" }}
-                    >
-                        <LogOut size={18} className="text-[#8899BB] group-hover:text-[#FF4D6D] transition-colors" />
-                    </button>
-                    <div className="absolute left-14 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg text-xs text-[#E8EEFF] font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50"
-                        style={{ background: "rgba(13,21,38,0.95)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                        Logout
-                    </div>
-                </div>
-            </div>
-        </aside>
-    )
-}
+      {/* ================= USER ================= */}
 
-export default Sidebar
+      <div className="orbit-user">
+        {user?.avatar ? (
+          <img
+            className="orbit-avatar"
+            src={user.avatar}
+            alt=""
+          />
+        ) : (
+          <div
+            className="
+              orbit-avatar
+              bg-orbit-surface
+              text-orbit-primary
+            "
+            aria-hidden="true"
+          >
+            {user?.fullName?.slice(0, 1) || "O"}
+          </div>
+        )}
+
+        <div className="orbit-user-info">
+          <strong className="text-orbit-text">
+            {user?.fullName || "Your account"}
+          </strong>
+
+          <span className="text-orbit-muted">
+            @{user?.userName || "profile"}
+          </span>
+        </div>
+
+        <button
+          className="orbit-icon-button"
+          type="button"
+          onClick={handleLogout}
+          aria-label="Log out"
+          title="Log out"
+        >
+          <LogOut
+            size={17}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+export default Sidebar;

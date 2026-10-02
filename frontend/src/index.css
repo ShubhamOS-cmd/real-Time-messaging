@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+@theme inline {
+	--color-orbit-bg: var(--orbit-bg);
+	--color-orbit-panel: var(--orbit-panel);
+	--color-orbit-surface: var(--orbit-surface);
+	--color-orbit-raised: var(--orbit-raised);
+	--color-orbit-primary: var(--orbit-primary);
+	--color-orbit-primary-hover: var(--orbit-primary-hover);
+	--color-orbit-accent: var(--orbit-accent);
+	--color-orbit-text: var(--orbit-text);
+	--color-orbit-muted: var(--orbit-muted);
+	--color-orbit-on-primary: var(--orbit-on-primary);
+	--color-orbit-line: var(--orbit-line);
+	--color-orbit-success: var(--orbit-success);
+	--color-orbit-danger: var(--orbit-danger);
+	--color-orbit-warning: var(--orbit-warning);
+}
