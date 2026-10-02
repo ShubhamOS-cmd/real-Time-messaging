@@ -1,15 +1,16 @@
-import dotenv from 'dotenv'
-dotenv.config({
-    path : './.env'
-});
+// redis.js
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
+
 import Redis from "ioredis";
 
-export const redis = new Redis({
-    host: "localhost",
-    port: 6379
+// General use: caching, rate limiting, etc.
+export const redis = new Redis(process.env.REDIS_URL);
+
+// BullMQ requires maxRetriesPerRequest: null
+export const BullMQ_Redis = new Redis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
 });
 
-export const BullMQ_Redis = new Redis({
-    host: "localhost",
-    port : 6379
-},{maxRetriesPerRequest:null});
+redis.on("error", (err) => console.error("Redis error:", err.message));
+BullMQ_Redis.on("error", (err) => console.error("BullMQ Redis error:", err.message));
