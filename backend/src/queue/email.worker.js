@@ -4,12 +4,12 @@ import {sendMail} from "../config/mailer.js";
 
 
 const emailWorker = new Worker("emails" , async(job)=>{
-    console.log("I am inside the work" , job.id , job.data);
     const {to , subject , body} = job.data;
     await sendMail(to , subject , body);
 } , {
     connection:BullMQ_Redis,
     concurrency:5, // worker processes 5 jobs simultaneously instead of one at a time 
+    limiter:{max:2 , duration:1000}, // max 2 job per seconds
     stalledInterval:30000, // on every 30 secs bullMQ checks are there any job that started but never finished 
     maxStalledCount:2
 })
@@ -17,9 +17,9 @@ emailWorker.on("completed" , (job) => {
     console.log("Completed job done" , job.id);
 })
 
-emailWorker.on("failed" , (job , err) => {
-    console.log("Job is Falied" , job.id , err.message);
-})
+emailWorker.on("failed", (job, err) => {
+  console.error(`Job ${job?.id} failed (attempt ${job?.attemptsMade}):`, err.message);
+});
 /**
  * What is stalledInterval -> When a worker picks up a job - bullMQ expects the worker to finish and report back within a certain time , 
  * if the worker crashes mid job it never report back . That job is now stuck in active state forever . Nobody is processing it so that is stalled job 
