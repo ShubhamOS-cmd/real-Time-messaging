@@ -359,7 +359,7 @@ const refresh = asyncHandler(async(req , res) => {
     if(!storedToken || storedToken !== refreshToken){
         throw new ApiError(401 , "Invalid Token" , ERROR_CODES.INVALID_REFRESH);
     }
-    const user = await user.findById(userId);
+    const user = await User.findById(userId);
     const new_accessToken = generateAccessToken(user._id , user.userName , user.email);
     const new_refreshToken = generateRefreshToken(user._id);
 
